@@ -14,12 +14,12 @@ import { useRouter } from 'next/router';
 
 export default function Sidebar() {
     const [user] = useAuthState(auth);
-    const [snapshot, loading, error] = useCollection(collection(db,"chats"));
+    const [snapshot] = useCollection(collection(db,"chats"));
     const chats = snapshot?.docs.map(doc => ({id: doc.id, ...doc.data()}));
     const router = useRouter();
 
     const redirect = (id) => {
-        router.push(`/chats/${id}`);
+        router.push(`/chat/${id}`);
 
     }
 
@@ -37,7 +37,7 @@ export default function Sidebar() {
             chats?.filter(chat => chat.users.includes(user.email))
             .map(
                 chat => 
-                    <Flex p={3} align="center" _hover={{bg: "gray.200", cursor: "pointer"}} onClick={() => redirect(chat.id)}>
+                    <Flex key={Math.random()} p={3} align="center" _hover={{bg: "gray.200", cursor: "pointer"}} onClick={() => redirect(chat.id)}>
                       <Avatar src="" marginEnd={3}/>
                       <Text>{getOtherEmail(chat.users, user)}</Text>
                      </Flex>

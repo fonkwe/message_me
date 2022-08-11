@@ -1,49 +1,47 @@
 import Sidebar from "../components/Sidebar";
-import { Flex, Heading} from '@chakra-ui/react'
-import { Avatar} from '@chakra-ui/avatar'
-import { Input } from '@chakra-ui/react'
-import { Button } from '@chakra-ui/react'
-import { FormControl } from '@chakra-ui/react'
+import { Flex, Text } from '@chakra-ui/react'
+import { useRouter } from "next/router";
+import { useCollectionData, useDocumentData } from "react-firebase-hooks/firestore";
+import { collection, orderBy } from "firebase/firestore";
+import { db, auth } from "../firebaseconfig";
+import { useAuthState } from 'react-firebase-hooks/auth';
+import getOtherEmail from "../components/utils/getOtherEmail";
+import Head from "next/head";
+import Topbar from "../components/Topbar";
+import Bottombar from "../components/Bottombar";
+import { query, doc } from "firebase/firestore";
 
-const Topbar = () => {
-    return(
-        <Flex
-           bg="gray.200"
-           h="81px" w="100%"
-           align="center"
-           p={5}
-        >
-           <Avatar src="" marginEnd={3}/>
-           <Heading size="lg">user@gmail.com</Heading>
-        </Flex>
-    )
-}
 
-const Bottombar = () => {
-    return(
-        <FormControl
-           p={3}
-        >
-          <Input placeholder="Type a message..." />
-          <Button type="submit" hidden>Submit</Button>
-        </FormControl>
-
-    )
-
-}
-
+ 
 export default function Chat() {
-    return (
-
-        <Flex>
+    const router = useRouter();
+    const  { id } = router.query;
+    const [user] = useAuthState(auth);
+    const q = query(collection(db, "chats", id, "messages"), orderBy("timestamp"));
+    const [messages] = useCollectionData(q);
+    const [chat] = useDocumentData(doc(db, "chats", id));
+    const getMessages = () => messages?.map(msg => {
+            const sender = msg.sender == user.email;
+            return(
+                <Flex key={Math.random()} alignSelf={sender ? "flex-start" : "flex-end"} w="fit-content" minWidth="100px" bg={sender ? "blue.100" : "green.100" } borderRadius="lg" p={3} m={1}>
+                    <Text>{msg.text}</Text>
+                </Flex>
+            )
+        })
+     return (
+        <Flex
+         h="100vh"
+        >
+            <Head><title>Chat</title></Head>
+            
             <Sidebar />
-
+            
             <Flex flex={1} direction="column">
-                <Topbar />
-
-                <Flex flex={1}></Flex>
-                <Bottombar />
-
+                <Topbar email={getOtherEmail(chat?.users, user)}/>
+                <Flex flex={1} direction="column" pt={4} mx={5} > 
+                    {getMessages()}
+                </Flex>
+                <Bottombar  id={id} user={user}/>  
             </Flex>
         </Flex>
     )
