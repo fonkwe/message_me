@@ -24,7 +24,7 @@ export default function Bottombar({id, user}) {
     console.log(input)
 
     return(
-        <FormControl
+        <FormControl 
            p={3}
            onSubmit={sendMessage}
            as="form"

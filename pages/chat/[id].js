@@ -17,9 +17,11 @@ export default function Chat() {
     const router = useRouter();
     const  { id } = router.query;
     const [user] = useAuthState(auth);
-    const q = query(collection(db, "chats", id, "messages"), orderBy("timestamp"));
+    const q = query(collection(db, `chats/${id}/messages`), orderBy("timestamp"));
     const [messages] = useCollectionData(q);
     const [chat] = useDocumentData(doc(db, "chats", id));
+
+    console.log(chat);
     const getMessages = () => messages?.map(msg => {
             const sender = msg.sender == user.email;
             return(
